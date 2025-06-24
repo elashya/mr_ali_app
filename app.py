@@ -1,17 +1,15 @@
 # app.py
 import streamlit as st
 from openai import OpenAI
-#from dotenv import load_dotenv
 import os
 import time
 import random
 
-# === Load API Key ===
-#load_dotenv()
-#OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Replace with your Assistant ID
 
+# === Load API Key ===
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=OPENAI_API_KEY)
+ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Replace with your Assistant ID
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
