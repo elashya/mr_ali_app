@@ -5,6 +5,21 @@ import os
 import time
 import random
 
+# === PIN Authentication ===
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("🔐 Mr. Ali - Secure Writing Access")
+    pin = st.text_input("Please enter your writing PIN:", type="password")
+    if pin == st.secrets["APP_PIN"]:
+        st.session_state.authenticated = True
+        st.success("✅ Access granted. Welcome, Mohamad!")
+        time.sleep(1)
+        st.experimental_rerun()
+    else:
+        st.warning("Please enter the correct PIN to begin.")
+        st.stop()
 
 # === Load API Key ===
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
