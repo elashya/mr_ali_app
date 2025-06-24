@@ -16,7 +16,7 @@ if not st.session_state.authenticated:
         st.session_state.authenticated = True
         st.success("✅ Access granted. Welcome, Mohamad!")
         time.sleep(1)
-        st.experimental_rerun()
+        st.rerun()
     else:
         st.warning("Please enter the correct PIN to begin.")
         st.stop()
