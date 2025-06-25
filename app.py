@@ -25,7 +25,7 @@ if not st.session_state.authenticated:
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=OPENAI_API_KEY)
 WRITING_ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Mr. Ali
-PUZZLE_ASSISTANT_ID = "asst_YourNewPuzzleAssistantID"   # Mr. Puzzle ← Replace this
+PUZZLE_ASSISTANT_ID = "asst_bnkXJguwaq1JWbMBnJDFJPxo"   # Mr. Puzzle ← Replace this
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
