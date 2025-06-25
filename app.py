@@ -25,7 +25,7 @@ if not st.session_state.authenticated:
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=OPENAI_API_KEY)
 WRITING_ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Mr. Ali
-PUZZLE_ASSISTANT_ID = "asst_YourNewPuzzleAssistantID"   # Mr. Puzzle ← Replace this
+PUZZLE_ASSISTANT_ID = "asst_bnkXJguwaq1JWbMBnJDFJPxo"   # Mr. Puzzle ← Replace this
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
@@ -159,21 +159,54 @@ st.subheader("✍️ Submit Your Writing or Puzzle Answer")
 user_input = st.text_area("Write your story or puzzle answer here:", height=250)
 
 if st.button("📬 Submit My Work"):
-if not user_input.strip():
-    st.warning("Please write something before submitting.")
-elif st.session_state.last_type == "puzzle":
-    if not st.session_state.puzzle_thread_id:
-        st.warning("Please click 'Give me a puzzle' first.")
-    else:
-        # [Handle puzzle answer here...]
-elif st.session_state.last_type == "challenge":
-    if not st.session_state.challenge_thread_id:
-        st.warning("Please get today's challenge first.")
-    else:
-        # [Handle writing challenge here...]
-else:
-    st.warning("Please start with either a challenge or a puzzle before submitting.")
+    if not user_input.strip():
+        st.warning("Please write something before submitting.")
 
+    elif st.session_state.last_type == "puzzle":
+        if not st.session_state.puzzle_thread_id:
+            st.warning("Please click 'Give me a puzzle' first.")
+        else:
+            try:
+                client.beta.threads.messages.create(
+                    thread_id=st.session_state.puzzle_thread_id,
+                    role="user",
+                    content=f"""Mohamad's answer to the puzzle is:
+
+{user_input}
+
+Please kindly respond:
+- Was the answer correct or not?
+- Explain the reasoning briefly
+- Give an encouraging comment
+- End with an emoji or short sticker line
+"""
+                )
+
+                run = client.beta.threads.runs.create(
+                    thread_id=st.session_state.puzzle_thread_id,
+                    assistant_id=PUZZLE_ASSISTANT_ID
+                )
+
+                while run.status != "completed":
+                    time.sleep(1)
+                    run = client.beta.threads.runs.retrieve(
+                        thread_id=st.session_state.puzzle_thread_id,
+                        run_id=run.id
+                    )
+
+                messages = client.beta.threads.messages.list(
+                    thread_id=st.session_state.puzzle_thread_id
+                )
+                response = messages.data[0].content[0].text.value
+                st.success("🧩 Mr. Puzzle’s Response")
+                st.markdown(response)
+
+            except Exception as e:
+                st.error(f"❌ Error submitting puzzle answer: {e}")
+
+    elif st.session_state.last_type == "challenge":
+        if not st.session_state.challenge_thread_id:
+            st.warning("Please get today's challenge first.")
         else:
             try:
                 client.beta.threads.messages.create(
@@ -231,48 +264,6 @@ Focus & Clarity:
 
             except Exception as e:
                 st.error(f"❌ Error submitting writing: {e}")
-
-    elif st.session_state.last_type == "puzzle":
-        if not st.session_state.puzzle_thread_id:
-            st.warning("Please click 'Give me a puzzle' first.")
-        else:
-            try:
-                client.beta.threads.messages.create(
-                    thread_id=st.session_state.puzzle_thread_id,
-                    role="user",
-                    content=f"""Mohamad's answer to the puzzle is:
-
-{user_input}
-
-Please kindly respond:
-- Was the answer correct or not?
-- Explain the reasoning briefly
-- Give an encouraging comment
-- End with an emoji or short sticker line
-"""
-                )
-
-                run = client.beta.threads.runs.create(
-                    thread_id=st.session_state.puzzle_thread_id,
-                    assistant_id=PUZZLE_ASSISTANT_ID
-                )
-
-                while run.status != "completed":
-                    time.sleep(1)
-                    run = client.beta.threads.runs.retrieve(
-                        thread_id=st.session_state.puzzle_thread_id,
-                        run_id=run.id
-                    )
-
-                messages = client.beta.threads.messages.list(
-                    thread_id=st.session_state.puzzle_thread_id
-                )
-                response = messages.data[0].content[0].text.value
-                st.success("🧩 Mr. Puzzle’s Response")
-                st.markdown(response)
-
-            except Exception as e:
-                st.error(f"❌ Error submitting puzzle answer: {e}")
 
     else:
         st.warning("Please start with either a challenge or a puzzle before submitting.")
