@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 from openai import OpenAI
 import os
@@ -10,6 +9,7 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
+    st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
     st.title("🔐 Mr. Ali - Secure Writing Access")
     pin = st.text_input("Please enter your writing PIN:", type="password")
     if pin == st.secrets["APP_PIN"]:
@@ -38,18 +38,12 @@ themes = {
 }
 
 # === Session State Initialization ===
-if "challenge_thread_id" not in st.session_state:
-    st.session_state.challenge_thread_id = None
-if "challenge_text" not in st.session_state:
-    st.session_state.challenge_text = ""
-if "feedback_text" not in st.session_state:
-    st.session_state.feedback_text = ""
-if "feedback_main" not in st.session_state:
-    st.session_state.feedback_main = ""
-if "feedback_score" not in st.session_state:
-    st.session_state.feedback_score = ""
-if "selected_theme" not in st.session_state:
-    st.session_state.selected_theme = ""
+for key in [
+    "challenge_thread_id", "challenge_text", "feedback_text",
+    "feedback_main", "feedback_score", "selected_theme", "puzzle_text"
+]:
+    if key not in st.session_state:
+        st.session_state[key] = ""
 
 # === Get Writing Challenge ===
 if st.button("🧠 Mr. Ali, what is today’s challenge?"):
@@ -57,12 +51,10 @@ if st.button("🧠 Mr. Ali, what is today’s challenge?"):
         thread = client.beta.threads.create()
         st.session_state.challenge_thread_id = thread.id
 
-        # Randomly choose a writing theme
         selected_theme = random.choice(list(themes.keys()))
         theme_description = themes[selected_theme]
         st.session_state.selected_theme = selected_theme
 
-        # Compose prompt
         prompt = f"""
 You are a kind writing coach helping a 12-year-old Muslim boy named Mohamad.
 
@@ -102,10 +94,20 @@ Only give **one** challenge. Do not give options.
     except Exception as e:
         st.error(f"❌ Error getting challenge: {e}")
 
+# === Puzzle Button (Placeholder) ===
+if st.button("🧩 Give me a puzzle"):
+    st.session_state.puzzle_text = "🧠 Puzzle loading... (Soon you'll get a fun brain teaser here!)"
+    st.success("Here's a brain puzzle from Mr. Ali!")
+
 # === Display Challenge if available ===
 if st.session_state.challenge_text:
     st.subheader("📜 Today's Challenge")
     st.markdown(st.session_state.challenge_text)
+
+# === Display Puzzle if available ===
+if st.session_state.puzzle_text:
+    st.subheader("🧠 Brain Puzzle")
+    st.markdown(st.session_state.puzzle_text)
 
 # === Submit Writing ===
 st.subheader("✍️ Submit Your Writing")
@@ -118,7 +120,6 @@ if st.button("📬 Submit My Work"):
         st.warning("Please get today's challenge first.")
     else:
         try:
-            # Add writing to the same thread
             client.beta.threads.messages.create(
                 thread_id=st.session_state.challenge_thread_id,
                 role="user",
@@ -161,7 +162,6 @@ Focus & Clarity:
             full_feedback = messages.data[0].content[0].text.value
             st.session_state.feedback_text = full_feedback
 
-            # === Separate the "Score" section ===
             if "Score:" in full_feedback:
                 feedback_part, score_part = full_feedback.split("Score:", 1)
                 st.session_state.feedback_main = feedback_part.strip()
