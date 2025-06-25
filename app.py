@@ -25,7 +25,7 @@ if not st.session_state.authenticated:
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=OPENAI_API_KEY)
 WRITING_ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Mr. Ali
-PUZZLE_ASSISTANT_ID = "asst_bnkXJguwaq1JWbMBnJDFJPxo"   # Mr. Puzzle ← Replace this
+PUZZLE_ASSISTANT_ID = "asst_YourNewPuzzleAssistantID"   # Mr. Puzzle ← Replace this
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
@@ -53,6 +53,7 @@ if st.button("🧠 Mr. Ali, what is today’s challenge?"):
         thread = client.beta.threads.create()
         st.session_state.challenge_thread_id = thread.id
         st.session_state.last_type = "challenge"
+        st.session_state.puzzle_text = ""  # clear puzzle
 
         selected_theme = random.choice(list(themes.keys()))
         theme_description = themes[selected_theme]
@@ -103,6 +104,9 @@ if st.button("🧩 Give me a puzzle"):
         puzzle_thread = client.beta.threads.create()
         st.session_state.puzzle_thread_id = puzzle_thread.id
         st.session_state.last_type = "puzzle"
+        st.session_state.challenge_text = ""
+        st.session_state.feedback_main = ""
+        st.session_state.feedback_score = ""
 
         puzzle_prompt = """
 You are Mr. Puzzle, a fun and kind assistant helping a 12-year-old Muslim boy named Mohamad.
@@ -144,13 +148,12 @@ Only one puzzle. No explanation unless asked.
     except Exception as e:
         st.error(f"❌ Error generating puzzle: {e}")
 
-# === Display Challenge ===
-if st.session_state.challenge_text:
+# === Display Either Challenge or Puzzle ===
+if st.session_state.last_type == "challenge" and st.session_state.challenge_text:
     st.subheader("📜 Today's Challenge")
     st.markdown(st.session_state.challenge_text)
 
-# === Display Puzzle ===
-if st.session_state.puzzle_text:
+elif st.session_state.last_type == "puzzle" and st.session_state.puzzle_text:
     st.subheader("🧠 Brain Puzzle")
     st.markdown(st.session_state.puzzle_text)
 
