@@ -28,7 +28,7 @@ ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Replace with your Assistant ID
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
-st.title("✍️ Mr. Ali – Writing Coach for Mohamad")
+st.title("✍️ Mr. Ali – Mohamad's Coach")
 
 # === Themes ===
 themes = {
