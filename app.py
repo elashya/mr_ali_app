@@ -159,11 +159,21 @@ st.subheader("✍️ Submit Your Writing or Puzzle Answer")
 user_input = st.text_area("Write your story or puzzle answer here:", height=250)
 
 if st.button("📬 Submit My Work"):
-    if not user_input.strip():
-        st.warning("Please write something before submitting.")
-    elif st.session_state.last_type == "challenge":
-        if not st.session_state.challenge_thread_id:
-            st.warning("Please get today's challenge first.")
+if not user_input.strip():
+    st.warning("Please write something before submitting.")
+elif st.session_state.last_type == "puzzle":
+    if not st.session_state.puzzle_thread_id:
+        st.warning("Please click 'Give me a puzzle' first.")
+    else:
+        # [Handle puzzle answer here...]
+elif st.session_state.last_type == "challenge":
+    if not st.session_state.challenge_thread_id:
+        st.warning("Please get today's challenge first.")
+    else:
+        # [Handle writing challenge here...]
+else:
+    st.warning("Please start with either a challenge or a puzzle before submitting.")
+
         else:
             try:
                 client.beta.threads.messages.create(
