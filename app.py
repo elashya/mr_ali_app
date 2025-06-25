@@ -21,10 +21,11 @@ if not st.session_state.authenticated:
         st.warning("Please enter the correct PIN to begin.")
         st.stop()
 
-# === Load API Key ===
+# === Load API Keys and Assistants ===
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=OPENAI_API_KEY)
-ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Replace with your Assistant ID
+WRITING_ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Mr. Ali (Writing Coach)
+PUZZLE_ASSISTANT_ID = "asst_bnkXJguwaq1JWbMBnJDFJPxo"   # Mr. Puzzle (Brain Teasers) ← replace this
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
@@ -40,12 +41,13 @@ themes = {
 # === Session State Initialization ===
 for key in [
     "challenge_thread_id", "challenge_text", "feedback_text",
-    "feedback_main", "feedback_score", "selected_theme", "puzzle_text"
+    "feedback_main", "feedback_score", "selected_theme",
+    "puzzle_text", "puzzle_thread_id"
 ]:
     if key not in st.session_state:
         st.session_state[key] = ""
 
-# === Get Writing Challenge ===
+# === Writing Challenge ===
 if st.button("🧠 Mr. Ali, what is today’s challenge?"):
     try:
         thread = client.beta.threads.create()
@@ -79,7 +81,7 @@ Only give **one** challenge. Do not give options.
 
         run = client.beta.threads.runs.create(
             thread_id=thread.id,
-            assistant_id=ASSISTANT_ID
+            assistant_id=WRITING_ASSISTANT_ID
         )
 
         while run.status != "completed":
@@ -94,17 +96,58 @@ Only give **one** challenge. Do not give options.
     except Exception as e:
         st.error(f"❌ Error getting challenge: {e}")
 
-# === Puzzle Button (Placeholder) ===
+# === Puzzle Generator ===
 if st.button("🧩 Give me a puzzle"):
-    st.session_state.puzzle_text = "🧠 Puzzle loading... (Soon you'll get a fun brain teaser here!)"
-    st.success("Here's a brain puzzle from Mr. Ali!")
+    try:
+        puzzle_thread = client.beta.threads.create()
+        st.session_state.puzzle_thread_id = puzzle_thread.id
 
-# === Display Challenge if available ===
+        puzzle_prompt = """
+You are Mr. Puzzle, a fun and kind assistant helping a 12-year-old Muslim boy named Mohamad.
+
+Please give him ONE short, age-appropriate brain teaser, riddle, or logic puzzle.
+
+Rules:
+- Keep it clear and fun
+- Make sure it’s solvable by a smart 12-year-old
+- Avoid complex math or confusing wording
+- End with an upbeat sentence like “Can you figure it out?”
+
+Only one puzzle. No explanation unless asked.
+"""
+
+        client.beta.threads.messages.create(
+            thread_id=puzzle_thread.id,
+            role="user",
+            content=puzzle_prompt
+        )
+
+        run = client.beta.threads.runs.create(
+            thread_id=puzzle_thread.id,
+            assistant_id=PUZZLE_ASSISTANT_ID
+        )
+
+        while run.status != "completed":
+            time.sleep(1)
+            run = client.beta.threads.runs.retrieve(
+                thread_id=puzzle_thread.id,
+                run_id=run.id
+            )
+
+        messages = client.beta.threads.messages.list(thread_id=puzzle_thread.id)
+        puzzle_text = messages.data[0].content[0].text.value
+        st.session_state.puzzle_text = puzzle_text
+        st.success("🧠 Here's your puzzle from Mr. Puzzle!")
+
+    except Exception as e:
+        st.error(f"❌ Error generating puzzle: {e}")
+
+# === Display Challenge ===
 if st.session_state.challenge_text:
     st.subheader("📜 Today's Challenge")
     st.markdown(st.session_state.challenge_text)
 
-# === Display Puzzle if available ===
+# === Display Puzzle ===
 if st.session_state.puzzle_text:
     st.subheader("🧠 Brain Puzzle")
     st.markdown(st.session_state.puzzle_text)
@@ -146,7 +189,7 @@ Focus & Clarity:
 
             run = client.beta.threads.runs.create(
                 thread_id=st.session_state.challenge_thread_id,
-                assistant_id=ASSISTANT_ID
+                assistant_id=WRITING_ASSISTANT_ID
             )
 
             while run.status != "completed":
@@ -176,7 +219,7 @@ Focus & Clarity:
         except Exception as e:
             st.error(f"❌ Error submitting writing: {e}")
 
-# === Display Score if available ===
+# === Display Score ===
 if st.session_state.feedback_score:
     st.subheader("📊 Your Score Breakdown")
     st.markdown(st.session_state.feedback_score)
