@@ -25,7 +25,7 @@ if not st.session_state.authenticated:
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=OPENAI_API_KEY)
 WRITING_ASSISTANT_ID = "asst_CIL8hS7ZusGwpdXdS6eB0zAr"  # Mr. Ali
-PUZZLE_ASSISTANT_ID = "asst_bnkXJguwaq1JWbMBnJDFJPxo"   # Mr. Puzzle ← Replace this
+PUZZLE_ASSISTANT_ID = "asst_bnkXJguwaq1JWbMBnJDFJPxo"   # Mr. Puzzle
 
 # === Page Config ===
 st.set_page_config(page_title="Mr. Ali's Writing Coach", layout="centered")
@@ -53,7 +53,7 @@ if st.button("🧠 Mr. Ali, what is today’s challenge?"):
         thread = client.beta.threads.create()
         st.session_state.challenge_thread_id = thread.id
         st.session_state.last_type = "challenge"
-        st.session_state.puzzle_text = ""  # clear puzzle
+        st.session_state.puzzle_text = ""
 
         selected_theme = random.choice(list(themes.keys()))
         theme_description = themes[selected_theme]
@@ -91,7 +91,11 @@ Only give **one** challenge. Do not give options.
             run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
 
         messages = client.beta.threads.messages.list(thread_id=thread.id)
-        response_text = messages.data[0].content[0].text.value
+        for message in reversed(messages.data):
+            if message.role == "assistant":
+                response_text = message.content[0].text.value
+                break
+
         st.session_state.challenge_text = f"📝 **Theme: {selected_theme}**\n\n" + response_text
         st.success("✅ Here's your writing challenge from Mr. Ali")
 
@@ -141,7 +145,11 @@ Only one puzzle. No explanation unless asked.
             )
 
         messages = client.beta.threads.messages.list(thread_id=puzzle_thread.id)
-        puzzle_text = messages.data[0].content[0].text.value
+        for message in reversed(messages.data):
+            if message.role == "assistant":
+                puzzle_text = message.content[0].text.value
+                break
+
         st.session_state.puzzle_text = puzzle_text
         st.success("🧠 Here's your puzzle from Mr. Puzzle!")
 
@@ -200,7 +208,11 @@ Please kindly respond:
                 messages = client.beta.threads.messages.list(
                     thread_id=st.session_state.puzzle_thread_id
                 )
-                response = messages.data[0].content[0].text.value
+                for message in reversed(messages.data):
+                    if message.role == "assistant":
+                        response = message.content[0].text.value
+                        break
+
                 st.success("🧩 Mr. Puzzle’s Response")
                 st.markdown(response)
 
@@ -251,7 +263,11 @@ Focus & Clarity:
                 messages = client.beta.threads.messages.list(
                     thread_id=st.session_state.challenge_thread_id
                 )
-                full_feedback = messages.data[0].content[0].text.value
+                for message in reversed(messages.data):
+                    if message.role == "assistant":
+                        full_feedback = message.content[0].text.value
+                        break
+
                 st.session_state.feedback_text = full_feedback
 
                 if "Score:" in full_feedback:
