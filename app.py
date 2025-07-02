@@ -112,19 +112,21 @@ if st.button("🧩 Give me a puzzle"):
         st.session_state.feedback_main = ""
         st.session_state.feedback_score = ""
 
-        puzzle_prompt = """
-You are Mr. Puzzle, a fun and kind assistant helping a 12-year-old Muslim boy named Mohamad.
+    puzzle_prompt = """
+You are Mr. Puzzle, a fun and clever assistant helping a 12-year-old Muslim boy named Mohamad.
 
-Please give him ONE short, age-appropriate brain teaser, riddle, or logic puzzle.
+Please create **one** creative, original brain teaser, riddle, or logic puzzle. Avoid overused ones like candles, shadows, or rivers.
 
-Rules:
-- Keep it clear and fun
-- Make sure it’s solvable by a smart 12-year-old
-- Avoid complex math or confusing wording
-- End with an upbeat sentence like “Can you figure it out?”
+The puzzle must be:
+- Age-appropriate but challenging for a smart 12-year-old
+- Encouraging critical thinking or lateral thinking
+- Not a math equation or number trick
+- Written in a fun, engaging way
+- Ending with a line like “Can you figure it out?”
 
-Only one puzzle. No explanation unless asked.
+Only return the puzzle. No answer. No explanation.
 """
+
 
         client.beta.threads.messages.create(
             thread_id=puzzle_thread.id,
