@@ -112,7 +112,7 @@ if st.button("🧩 Give me a puzzle"):
         st.session_state.feedback_main = ""
         st.session_state.feedback_score = ""
 
-    puzzle_prompt = """
+        puzzle_prompt = """
 You are Mr. Puzzle, a fun and clever assistant helping a 12-year-old Muslim boy named Mohamad.
 
 Please create **one** creative, original brain teaser, riddle, or logic puzzle. Avoid overused ones like candles, shadows, or rivers.
@@ -126,7 +126,6 @@ The puzzle must be:
 
 Only return the puzzle. No answer. No explanation.
 """
-
 
         client.beta.threads.messages.create(
             thread_id=puzzle_thread.id,
@@ -157,6 +156,7 @@ Only return the puzzle. No answer. No explanation.
 
     except Exception as e:
         st.error(f"❌ Error generating puzzle: {e}")
+
 
 # === Display Either Challenge or Puzzle ===
 if st.session_state.last_type == "challenge" and st.session_state.challenge_text:
